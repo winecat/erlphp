@@ -1,22 +1,24 @@
 %%% -------------------------------------------------------------------
-%%% Author  : xianrongMai
+%%% Author  : winecat
 %%% Description : php事件处理进程
 %%%
 %%% Created : 2013-10-1
 %%% -------------------------------------------------------------------
--module(php_worker).
+-module(erlphp_worker).
 
 -behaviour(gen_server).
 %% --------------------------------------------------------------------
 %% Include files
 %% --------------------------------------------------------------------
 
--include("php.hrl").
+-include("erlphp.hrl").
 
 %% --------------------------------------------------------------------
 %% External exports
--export([start_link/0,
-		 test_exec/0]).
+-export([
+         start_link/0
+         ,test_exec/0
+        ]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -42,9 +44,10 @@ start_link() ->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-	?TEST_INFO("[~w] start...", [?MODULE]),
-	?TEST_INFO("[~w]started", [?MODULE]),
-	{ok, #state{}}.
+    ?TEST_INFO("[~w] start...", [?MODULE]),
+    erlang:process_flag(trap_exit, true),
+    ?TEST_INFO("[~w]started", [?MODULE]),
+    {ok, #state{}}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_call/3
