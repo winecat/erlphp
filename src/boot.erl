@@ -42,10 +42,9 @@ apps_control(Iterate, Do, Undo,
     Fun = 
         fun(App, AccIn) ->
                 case Do(App) of
-                    ok -> io:format("0000000000"),[App|AccIn];
-                    {error, {InterruptError, _}} -> io:format("999999999:~p", [InterruptError]),AccIn;
+                    ok -> [App|AccIn];
+                    {error, {InterruptError, _}} -> AccIn;
                     {error, Reason} ->
-io:format("777777777:~p", [Reason]),
                         lists:foreach(Undo, AccIn),
                         throw({error, {ErrorNotice, App, Reason}})
                 end
