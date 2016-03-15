@@ -19,6 +19,7 @@
                             ,{send_timeout_close, false}
                             ]}
              ,{tcp_php_port, 8009}
+			 ,{tcp_php_ips, ["127.0.0.1", "183.60.40.93"]}
             ]
      }
     ]
