@@ -3,8 +3,8 @@
 %%% Description :侦听php请求进程, 仅负责端口侦听,事件处理交付给php_mgr
 %%%
 %%% 以'GET'的方式调用url
-%%% http://${IP}:8007/php_req?p=${Platform}&srv_id=${Srv_id}&do={M,F,A}.
-%%% 例子:http://127.0.0.1:8007/php_req?p=0&srv_id=0&do=php_worker:test_exec().
+%%% http://${IP}:8007/php_req?platform=${Platform}&server_num=${ServerNum}&do={M,F,A}.
+%%% 例子:http://127.0.0.1:8009/php_req?platform=xm_dev&server_num=1&do=erlphp_worker:test_exec().
 %%% 
 %%% Created : 2013-9-30
 %%% -------------------------------------------------------------------
@@ -73,10 +73,10 @@ loop(LSock) ->
 		{ok, Sock} ->
 			case check_ip(Sock) of
 				{true, _OkIP} ->
-					?TEST_INFO("[~w]收到来自[~s]的请求", [?MODULE, _OkIP]),
-					gen_server:cast(welphp_monitor, {accept_php, Sock});
+					?INFO("[~w]收到来自[~s]的请求", [?MODULE, _OkIP]),
+					gen_server:cast(erlphp_monitor, {accept_php, Sock});
 				{false, ErIp} ->%%不是合法的ip地址,直接忽略
-					?TEST_ERR("收到异常ip发送的http请求,[Ip:~s]", [ErIp]),
+					?ERR("收到异常ip发送的http请求,[Ip:~s]", [ErIp]),
 					invalid_ip
 			end;
 		{erroe, Reason} -> Reason

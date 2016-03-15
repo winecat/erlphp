@@ -16,7 +16,7 @@ start_link() ->
 
 init([]) ->
     ChildList = child_list(),
-    {ok,{{one_for_all,0,1}, ChildList}}.
+    {ok,{{one_for_one,3,10}, ChildList}}.
 
 child_list() ->
     [{'erlphp_monitor',{'erlphp_monitor',start_link,[]}, permanent,2000,worker,['erlphp_monitor']}

@@ -42,12 +42,12 @@ apps_control(Iterate, Do, Undo,
     Fun = 
         fun(App, AccIn) ->
                 case Do(App) of
-                    ok -> [App|AccIn];
+                    ok -> AccIn;
                     {error, {InterruptError, _}} -> AccIn;
                     {error, Reason} ->
                         lists:foreach(Undo, AccIn),
                         throw({error, {ErrorNotice, App, Reason}})
                 end
         end,
-    Iterate(Fun, [], Apps).
+    Iterate(Fun, ok, Apps).
 

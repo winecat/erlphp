@@ -70,29 +70,34 @@ handle_request(Sock) ->
 	case gen_tcp:recv(Sock, 0, 80000) of
 		{ok, Bin} -> 
 			%% 收到请求
-			case erlang:decode_packet(http_bin, Bin, []) of
+            %%?D("接收到二进制:~ts", [Bin]),
+            ToBinary = util:to_binary(Bin),
+			case erlang:decode_packet(http_bin, ToBinary, []) of
 				{ok, Packet, _Rest} ->
+                    %%?D("接收到信息:~w", [Packet]),
 					PSrvIdPack = get_platform_server_id(),
 					PSrvIdPackLength = byte_size(PSrvIdPack),
-					case Packet of
-						{http_request,'GET',{abs_path,<<"/php_req?", PSrvIdPack:PSrvIdPackLength/binary, Tail/binary>>},{1,1}} ->
-							%% 强制性匹配当前平台Id和服务器Id，不合法的请求一律过滤
-							%%?DEBUG("Tail:~p", [Tail]),
-							Request = httpd_util:decode_hex(binary_to_list(Tail)),
-							%%?DEBUG("Request:~p", [Request]),
-							Return = util:exc_val(Request),
-							%%?DEBUG("Return:~ts", [Return]),
-							list_to_binary(rfc4627:encode(Return));
-						_ER ->
-							?TEST_ERR("[~w] receive bad request:~p", [?MODULE, _ER]),
-							<<"bad request">>
-					end;
+                    %%?D("PSrvIdPack:~ts", [PSrvIdPack]),
+                    case Packet of
+                        {http_request,'GET',{abs_path, <<"/favicon.ico">>},{1,1}} -> <<"ok">>;
+                        {http_request,'GET',{abs_path,<<"/php_req?", PSrvIdPack:PSrvIdPackLength/binary, Tail/binary>>},{1,1}} ->
+                            %% 强制性匹配当前平台Id和服务器Id，不合法的请求一律过滤
+                            ?D("Tail:~p", [Tail]),
+                            Request = httpd_util:decode_hex(binary_to_list(Tail)),
+                            ?D("Request:~p", [Request]),
+                            Return = util:exec_val(Request),
+                            ?D("Return:~w", [Return]),
+                            list_to_binary(rfc4627:encode(Return));
+                        _ER ->
+                            ?ERR("[~w] receive bad request:~p", [?MODULE, _ER]),
+                            <<"bad request">>
+                    end;
 				_E ->
-					?TEST_ERR("[~w] decode packet error", [?MODULE]),
+					?ERR("[~w] decode packet error:~w", [?MODULE, _E]),
 					<<"decode packet error">>
 			end;
-		_ ->
-			?TEST_ERR("[~w] recv error", [?MODULE]),
+		_Err ->
+			?ERR("[~w] recv error:~w", [?MODULE, _Err]),
 			<<"recv error">>
 	end.
 
@@ -100,11 +105,11 @@ handle_request(Sock) ->
 %% @spec get_platform_server_id() -> Binary
 %% @doc 获取平台名和服务器id
 get_platform_server_id() ->
-    Platform = util:to_string(sys_env:get(platform)),
-    ServerId = util:to_string(sys_env:get(srv_id)),
+    Platform = config:get_platform(),
+    ServerNum = config:get_server_num(),
     list_to_binary([
-            <<"p=">>, Platform, 
-            <<"&srv_id=">>, ServerId,
+            <<"platform=">>, Platform, 
+            <<"&server_num=">>, integer_to_binary(ServerNum),
             <<"&do=">>
         ]).
 
@@ -113,6 +118,7 @@ get_platform_server_id() ->
 %% 浏览器地址调用  http://127.0.0.1:8007/php_req?p=0&srv_id=0&do=php_worker:test_exec().
 %% ==========================================================
 test_exec() ->
-	List = db:get_all("select id from role"),
-	?TEST_INFO("结果是：~w", [List]),
-	ok.
+    ?D("1111111111111111"),
+	List = db:get_all("select id from player"),
+	%%?INFO("select id from player 结果是：~w", [List]),
+	List.
