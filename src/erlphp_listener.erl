@@ -34,7 +34,8 @@ init([]) ->
 			case gen_tcp:listen(Port, parse_tcp_php_opts()) of
 				{ok, LSock} ->
 					erlang:spawn_link(fun() -> loop(LSock) end),
-					?TEST_INFO("[~w]成功监听到端口:~w", [?MODULE, Port]),
+					?TEST_INFO("erlang php worker listening port { ~w } succeed.", [Port]),
+                    ?TEST_INFO("[~w] started", [?MODULE]),
 					{ok, #state{}};
 				{error, Reason} ->%%侦听失败.端口重用了?
 					?TEST_ERR("无法监听到 ~w:~w~n", [Port, Reason]),
@@ -73,7 +74,7 @@ loop(LSock) ->
 		{ok, Sock} ->
 			case check_ip(Sock) of
 				{true, _OkIP} ->
-					?INFO("[~w]收到来自[~s]的请求", [?MODULE, _OkIP]),
+					%%?INFO("[~w]收到来自[~s]的请求", [?MODULE, _OkIP]),
 					gen_server:cast(erlphp_monitor, {accept_php, Sock});
 				{false, ErIp} ->%%不是合法的ip地址,直接忽略
 					?ERR("收到异常ip发送的http请求,[Ip:~s]", [ErIp]),
@@ -87,7 +88,7 @@ loop(LSock) ->
 check_ip(Sock) ->
 	IP = get_ip(Sock),
 	MyIP = util:to_binary(IP),
-	case lists:any(fun(OkIP) -> MyIP =:= util:to_binary(OkIP) end, sys_env:get(tcp_php_ips)) of
+	case lists:any(fun(OkIP) -> MyIP =:= util:to_binary(OkIP) end, erlphp_api:get_env(tcp_php_ips)) of
 		true ->
 			{true, IP};
 		false -> 
